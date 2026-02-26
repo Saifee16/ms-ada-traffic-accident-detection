@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+  # ── CPU variant ──────────────────────────────────────────
+  surveillance-cpu:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: cpu
+    image: traffic-surv:cpu
+    volumes:
+      - ../input:/app/input:ro
+      - ../output:/app/output
+      - ../configs:/app/configs:ro
+    environment:
+      - WA_ACCESS_TOKEN=${WA_ACCESS_TOKEN}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+    command: run --source /app/input/video.mp4 --output /app/output/processed.mp4
+
+  # ── GPU variant ──────────────────────────────────────────
+  surveillance-gpu:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: gpu
+    image: traffic-surv:gpu
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    volumes:
+      - ../input:/app/input:ro
+      - ../output:/app/output
+      - ../configs:/app/configs:ro
+    environment:
+      - WA_ACCESS_TOKEN=${WA_ACCESS_TOKEN}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+    command: run --source /app/input/video.mp4 --output /app/output/processed.mp4

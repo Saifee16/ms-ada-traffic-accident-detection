@@ -1,0 +1,127 @@
+# ============================================================
+# Traffic Surveillance System — Default Configuration
+# ============================================================
+
+system:
+  log_level: INFO          # DEBUG | INFO | WARNING | ERROR
+  log_json: false          # true → structured JSON logs
+  device: auto             # auto | cpu | cuda:0
+
+# ─── Video Input ────────────────────────────────────────────
+video:
+  frame_skip: 2            # process every Nth frame (1 = all)
+  resize_width: 640        # inference resolution width (keeps AR)
+  buffer_size: 64          # bounded producer/consumer queue depth
+  output_fps: 25           # rendered output video FPS
+
+# ─── Detector ───────────────────────────────────────────────
+detector:
+  model: yolo11n.pt        # ultralytics auto-downloads on first run
+  conf_threshold: 0.45     # was 0.35 — rejects weak/partial detections
+  iou_threshold: 0.50      # was 0.45 — tighter NMS
+  classes: [0, 1, 2, 3, 5, 7]   # person, bicycle, car, motorbike, bus, truck
+  half: false              # FP16 — only effective on CUDA
+  min_bbox_area_ratio: 0.0005   # drop detections smaller than 0.05% of frame area
+
+# ─── Plate Detector ─────────────────────────────────────────
+plate_detector:
+  model: models/plate_detector.pt   # fine-tuned YOLO for plates
+  conf_threshold: 0.40
+  fallback_id_prefix: "VEHICLE-ID"
+
+# ─── Tracker ────────────────────────────────────────────────
+tracker:
+  type: bytetrack          # bytetrack | strongsort
+  bytetrack:
+    track_high_thresh: 0.5
+    track_low_thresh: 0.1
+    new_track_thresh: 0.6
+    track_buffer: 30       # frames to keep lost track alive
+    match_thresh: 0.8
+  strongsort:
+    max_dist: 0.2
+    max_iou_distance: 0.7
+    max_age: 30
+    n_init: 3
+    nn_budget: 100
+  reid_gap_seconds: 10     # tracks separated > this → new ID
+
+# ─── Speed Estimation ───────────────────────────────────────
+speed:
+  pixels_per_meter: 8.0    # calibration — override per camera
+  smoothing_window: 5      # rolling average frames
+
+# ─── ALPR ───────────────────────────────────────────────────
+alpr:
+  ocr_engine: easyocr      # easyocr | paddleocr
+  languages: [en]
+  min_confidence: 0.45
+  retry_until_exit: true
+  frame_interval: 15       # run OCR at most once every N processed frames per track
+                           # 15 ≈ 1 attempt/sec at 30fps+frame_skip=2. Set lower for higher accuracy.
+  pakistan_formats:        # regex patterns — first match wins
+    - '^[A-Z]{2,3}\s?\d{3,4}$'          # ABC 1234 / AB 123
+    - '^[A-Z]{1,2}\s?\d{4}$'            # A 1234
+    - '^[A-Z]{3}\s?\d{2,3}$'            # LEA 12
+    - '^RIV\s?\d{2,4}$'                 # Rivet/special
+
+# ─── Accident Detection ─────────────────────────────────────
+accident:
+  confirmation_seconds: 0.8      # at ~12 processed fps = ~10 frames needed
+                                 # fast-path bypasses this for high-IoU overlaps
+  cooldown_seconds: 30.0
+  iou_spike_threshold: 0.20      # also used as fast-path IoU threshold
+  speed_drop_ratio: 0.5
+  optical_flow_anomaly_zscore: 2.5
+  proximity_px: 80
+  min_signals_required: 2        # iou+proximity is sufficient for confirmation window path
+  min_track_age_frames: 8
+  min_approach_speed_px: 2.0
+  min_severity: 0.15
+  severity_weights:
+    iou: 0.35
+    trajectory: 0.25
+    deceleration: 0.20
+    optical_flow: 0.10
+    proximity: 0.10
+  false_positive_suppression_frames: 3  # allow up to 3 bad frames in the window
+
+# ─── Counting ───────────────────────────────────────────────
+counting:
+  window_seconds: 30
+  emit_on_window_close: true
+
+# ─── Alerts ─────────────────────────────────────────────────
+alerts:
+  enabled: true
+  mock_mode: false          # true → print alerts instead of sending
+  whatsapp:
+    api_version: v19.0
+    phone_number_id: "YOUR_PHONE_NUMBER_ID"
+    access_token: "YOUR_ACCESS_TOKEN"       # store in env: WA_ACCESS_TOKEN
+    recipient_number: "92300XXXXXXX"        # E.164 format
+  smtp:
+    host: smtp.gmail.com
+    port: 587
+    username: "YOUR_EMAIL@gmail.com"
+    password: "YOUR_APP_PASSWORD"           # env: SMTP_PASSWORD
+    recipient: "alerts@yourorg.com"
+    use_tls: true
+
+# ─── Storage ────────────────────────────────────────────────
+storage:
+  csv_path: output/detections.csv
+  snapshots_dir: output/snapshots
+  clips_dir: output/clips
+  clip_duration_seconds: 5
+  backend: csv             # csv | sqlite | postgres (future)
+  sqlite_path: output/surveillance.db
+
+# ─── Camera ─────────────────────────────────────────────────
+cameras:
+  default:
+    id: cam_01
+    pixels_per_meter: 8.0
+  secondary:
+    id: cam_02
+    pixels_per_meter: 8.0

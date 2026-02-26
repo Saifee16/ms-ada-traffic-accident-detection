@@ -1,0 +1,22 @@
+# datasets/data.yaml — YOLO fine-tuning dataset config
+# Required directory layout:
+#   datasets/traffic/
+#     images/
+#       train/   *.jpg / *.png
+#       val/     *.jpg / *.png
+#       test/    *.jpg / *.png
+#     labels/
+#       train/   *.txt  (YOLO format: class cx cy w h normalized)
+#       val/     *.txt
+#       test/    *.txt
+
+path: datasets/traffic
+train: images/train
+val: images/val
+test: images/test
+
+nc: 6
+names: [person, bicycle, car, motorcycle, bus, truck]
+
+# Fine-tune command (run from project root):
+# yolo detect train model=yolo11n.pt data=datasets/data.yaml epochs=100 imgsz=640 batch=16 lr0=0.01 project=models/finetune name=traffic_v1

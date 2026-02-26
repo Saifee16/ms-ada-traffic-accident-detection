@@ -1,0 +1,109 @@
+# ─── Python ───────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
+wheels/
+
+# ─── Virtual Environment ──────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+.env
+
+# ─── Environment Variables / Secrets ─────────────────────────
+.env.local
+.env.production
+*.env
+secrets.yaml
+secrets.yml
+
+# ─── ML Models & Weights (large binary files) ─────────────────
+*.pt
+*.pth
+*.onnx
+*.trt
+*.engine
+*.pb
+*.h5
+*.pkl
+*.joblib
+models/finetune/
+runs/
+
+# ─── Output Files (generated at runtime) ─────────────────────
+output/
+output/snapshots/
+output/clips/
+output/detections.csv
+output/processed.mp4
+
+# ─── Dataset Images & Labels (too large for git) ─────────────
+datasets/traffic/images/
+datasets/traffic/labels/
+datasets/*/images/
+datasets/*/labels/
+
+# ─── Test Fixtures / Sample Videos ───────────────────────────
+tests/fixtures/videos/
+tests/fixtures/frames/
+
+# ─── Logs ─────────────────────────────────────────────────────
+*.log
+logs/
+
+# ─── IDE & Editor ─────────────────────────────────────────────
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.spyderproject.cfg
+.ropeproject
+*.swp
+*.swo
+*~
+
+# ─── OS Artifacts ─────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# ─── Pytest & Coverage ────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+*.cover
+.hypothesis/
+
+# ─── Jupyter ──────────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb
+
+# ─── Docker ───────────────────────────────────────────────────
+docker/volumes/
+
+# ─── Ultralytics / YOLO Runtime ───────────────────────────────
+ultralytics/
+
+# ─── Output Files (generated at runtime) ─────────────────────
+output/clips/
+output/snapshots/
+output/detections.csv
+output/processed.mp4

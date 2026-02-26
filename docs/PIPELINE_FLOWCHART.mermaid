@@ -1,0 +1,38 @@
+flowchart TD
+    START([Start]) --> OPEN[Open VideoCapture]
+    OPEN --> READ{Read Frame}
+    READ -->|EOF| FINALIZE[Finalize ALPR\nfor active tracks]
+    FINALIZE --> CSV_FINAL[Append remaining\nrows to CSV]
+    CSV_FINAL --> DONE([Done])
+
+    READ -->|Frame| SKIP{Frame skip\ncheck}
+    SKIP -->|Skip| READ
+    SKIP -->|Process| RESIZE[Resize to 640px]
+
+    RESIZE --> DETECT[YOLOv11 Inference\nclasses: vehicle/person]
+    DETECT --> TRACK[ByteTrack\nAssociation]
+    TRACK --> FOREACH[For each tracked vehicle]
+
+    FOREACH --> CROP[Crop vehicle bbox]
+    CROP --> PLATE_DET{Plate detector\navailable?}
+    PLATE_DET -->|Yes| PLATE_INF[YOLO plate inference\non crop]
+    PLATE_DET -->|No| HEURISTIC[Lower-half heuristic]
+    PLATE_INF --> OCR_RUN[EasyOCR on\nenhanced plate region]
+    HEURISTIC --> OCR_RUN
+    OCR_RUN --> VALIDATE{Pakistan\nformat valid?}
+    VALIDATE -->|Yes| ACCUMULATE[Accumulate reading\nfor track ID]
+    VALIDATE -->|No| ACCUMULATE
+
+    ACCUMULATE --> COUNTER[Update sliding\nwindow counter]
+    COUNTER --> CSV_ROW[Write sampled\nCSV detection row]
+
+    CSV_ROW --> FUSION[Accident Fusion\nevaluate all pairs]
+    FUSION --> SIGNALS{≥ min_signals\nfor ≥ confirm_seconds?}
+    SIGNALS -->|No| ANNOTATE
+    SIGNALS -->|Yes| SAVE_MEDIA[Save snapshot + clip]
+    SAVE_MEDIA --> ALERT[Dispatch WhatsApp\n+ SMTP alerts async]
+    ALERT --> CSV_ACC[Write accident rows\nto CSV]
+    CSV_ACC --> ANNOTATE[Draw overlays\non frame]
+
+    ANNOTATE --> WRITE[Write to output MP4]
+    WRITE --> READ

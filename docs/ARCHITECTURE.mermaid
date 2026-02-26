@@ -1,0 +1,62 @@
+flowchart TB
+    subgraph Input
+        V1[MP4 Video Cam 1]
+        V2[MP4 Video Cam 2]
+    end
+
+    subgraph Pipeline["Video Pipeline (per camera)"]
+        direction TB
+        PROD[Producer Thread\nVideoCapture → FrameQueue]
+        WORK[Worker Thread\nDetect → Track → ALPR → Fuse]
+        REND[Renderer Thread\nAnnotate → Write MP4]
+        PROD --> WORK --> REND
+    end
+
+    subgraph Detection["Detection Layer"]
+        YOLO[YOLOv11n\nCPU / CUDA auto]
+        PLATE[Plate Detector\nYOLO fine-tuned]
+        OCR[EasyOCR\nPakistan normalizer]
+        YOLO --> PLATE --> OCR
+    end
+
+    subgraph Tracking["Tracking Layer"]
+        BT[ByteTrack\nKalman + IoU]
+        SPEED[Speed Estimator\nrolling avg]
+        TRAJ[Trajectory History\ndeque 60 frames]
+        BT --> SPEED
+        BT --> TRAJ
+    end
+
+    subgraph Fusion["Accident Fusion Engine"]
+        S1[Signal 1: IoU Spike]
+        S2[Signal 2: Trajectory Cross]
+        S3[Signal 3: Deceleration]
+        S4[Signal 4: Optical Flow Δ]
+        S5[Signal 5: Proximity]
+        CONF[Confirmation Window\n≥ 3 signals × 2s]
+        SEV[Severity Scorer\nweighted sum]
+        S1 & S2 & S3 & S4 & S5 --> CONF --> SEV
+    end
+
+    subgraph Alerts["Alert Dispatcher (async)"]
+        WA[WhatsApp\nMeta Cloud API v19.0]
+        SMTP[SMTP Email\n+ snapshot attachment]
+    end
+
+    subgraph Storage["Storage Layer"]
+        CSV[Cumulative CSV\n13 fields]
+        SNAP[Snapshot JPEG]
+        CLIP[Evidence Clip MP4]
+    end
+
+    V1 & V2 --> Pipeline
+    Pipeline --> Detection
+    Detection --> Tracking
+    Tracking --> Fusion
+    Fusion --> Alerts
+    Fusion --> Storage
+    Alerts -.->|non-blocking| WA & SMTP
+
+    style Fusion fill:#ffcccc,stroke:#cc0000
+    style Alerts fill:#ccffcc,stroke:#006600
+    style Storage fill:#cce5ff,stroke:#004080

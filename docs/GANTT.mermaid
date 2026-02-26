@@ -1,0 +1,33 @@
+gantt
+    title Traffic Surveillance FYP — Remaining Milestones
+    dateFormat  YYYY-MM-DD
+    axisFormat  %b %d
+
+    section Data Collection
+    Record/source traffic footage        :done,    d1, 2025-01-01, 14d
+    Annotate accident clips (Roboflow)   :active,  d2, 2025-01-15, 21d
+
+    section Model Development
+    Fine-tune YOLO on traffic dataset    :         m1, 2025-02-05, 14d
+    Fine-tune plate detector             :         m2, 2025-02-05, 14d
+    Evaluate baseline mAP / HOTA         :         m3, 2025-02-19, 7d
+
+    section Pipeline Integration
+    End-to-end pipeline testing          :         p1, 2025-02-26, 14d
+    Dual-camera mode validation          :         p2, 2025-03-12, 7d
+    ALPR accuracy validation             :         p3, 2025-03-12, 7d
+
+    section Evaluation & Tuning
+    Accident detection threshold tuning  :         e1, 2025-03-19, 14d
+    FPS benchmarking on target hardware  :         e2, 2025-03-19, 7d
+    Alert latency end-to-end testing     :         e3, 2025-03-26, 7d
+
+    section Academic Writing
+    Methodology chapter draft            :         w1, 2025-04-02, 14d
+    Results & Discussion chapter         :         w2, 2025-04-16, 14d
+    Final thesis submission              :         w3, 2025-04-30, 7d
+
+    section GPU Deployment (Post-submission)
+    ONNX/TensorRT export + benchmark     :         g1, 2025-05-07, 14d
+    Docker GPU image deployment          :         g2, 2025-05-21, 7d
+    Production camera integration        :         g3, 2025-05-28, 14d
