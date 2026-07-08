@@ -1,7 +1,6 @@
 version: "3.9"
 
 services:
-  # ── CPU variant ──────────────────────────────────────────
   surveillance-cpu:
     build:
       context: ..
@@ -14,10 +13,13 @@ services:
       - ../configs:/app/configs:ro
     environment:
       - WA_ACCESS_TOKEN=${WA_ACCESS_TOKEN}
+      - WA_PHONE_NUMBER_ID=${WA_PHONE_NUMBER_ID}
+      - WA_RECIPIENT_NUMBER=${WA_RECIPIENT_NUMBER}
+      - SMTP_USERNAME=${SMTP_USERNAME}
       - SMTP_PASSWORD=${SMTP_PASSWORD}
-    command: run --source /app/input/video.mp4 --output /app/output/processed.mp4
+      - SMTP_RECIPIENT=${SMTP_RECIPIENT}
+    command: run --source /app/input/video.mp4 --output /app/output/processed.mp4 --alerts mock --no-display
 
-  # ── GPU variant ──────────────────────────────────────────
   surveillance-gpu:
     build:
       context: ..
@@ -37,5 +39,9 @@ services:
       - ../configs:/app/configs:ro
     environment:
       - WA_ACCESS_TOKEN=${WA_ACCESS_TOKEN}
+      - WA_PHONE_NUMBER_ID=${WA_PHONE_NUMBER_ID}
+      - WA_RECIPIENT_NUMBER=${WA_RECIPIENT_NUMBER}
+      - SMTP_USERNAME=${SMTP_USERNAME}
       - SMTP_PASSWORD=${SMTP_PASSWORD}
-    command: run --source /app/input/video.mp4 --output /app/output/processed.mp4
+      - SMTP_RECIPIENT=${SMTP_RECIPIENT}
+    command: run --source /app/input/video.mp4 --output /app/output/processed.mp4 --alerts mock --no-display

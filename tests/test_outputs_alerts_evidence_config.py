@@ -38,7 +38,7 @@ def test_csv_writer_includes_required_columns(tmp_path):
 
 
 def test_alert_mock_receives_correct_payload():
-    alerter = WhatsAppAlerter(mock_mode=True, recipient_number="923001234567")
+    alerter = WhatsAppAlerter(mock_mode=True, recipient_number="TEST_RECIPIENT")
     alert = WhatsAppAlert(
         event_id="ACC-000001-1-2-001",
         vehicle_id_a="1",
@@ -60,7 +60,7 @@ def test_alert_mock_receives_correct_payload():
         time.sleep(0.01)
     assert alerter.mock_payloads
     payload = alerter.mock_payloads[0]["payload"]
-    assert payload["to"] == "923001234567"
+    assert payload["to"] == "TEST_RECIPIENT"
     assert "ACC-000001-1-2-001" in payload["text"]["body"]
     assert "ABC 1234" in payload["text"]["body"]
 

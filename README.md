@@ -14,19 +14,22 @@ pip install -r requirements.txt
 
 The default config uses `system.device: auto`, so the app runs on CPU now and can use CUDA later when a compatible GPU/PyTorch build is installed.
 
+## How It Works
+
+MS-ADA combines YOLOv11n vehicle detection, ByteTrack-style identity persistence, per-track motion history, ALPR, and a deterministic accident fusion module. The fusion logic avoids relying on bounding-box overlap alone by checking contact/proximity, relative motion, delta-v/deceleration, optical-flow disturbance, and trajectory convergence across a temporal confirmation window.
+
+Architecture references are in `docs/ARCHITECTURE.mermaid`, `docs/PIPELINE_FLOWCHART.mermaid`, `docs/METHODOLOGY.md`, and `docs/ALGORITHM_OVERVIEW.md`.
+
 ## Video Inputs
 
-Put MP4 files anywhere in the repo, for example:
+Provide your own MP4 traffic video. Raw footage is not distributed in this repository because traffic datasets can be large and may include license plates, faces, or other privacy-sensitive content.
 
-```text
-tests/fixtures/videos/sample_accident.mp4
-tests/fixtures/videos/sample_normal.mp4
-```
+You can place a local video anywhere outside Git tracking, then pass its path to `--source`.
 
 ## Run Detection
 
 ```powershell
-.\.venv\Scripts\python.exe cli.py run --source tests\fixtures\videos\sample_accident.mp4 --camera-id CAM01 --output output\out.mp4 --alerts mock --debug-events --display
+.\.venv\Scripts\python.exe cli.py run --source path\to\traffic_video.mp4 --camera-id CAM01 --output output\out.mp4 --alerts mock --debug-events --display
 ```
 
 Disable alerts:
@@ -38,7 +41,7 @@ Disable alerts:
 Short smoke run:
 
 ```powershell
-.\.venv\Scripts\python.exe cli.py run --source tests\fixtures\videos\sample_accident.mp4 --camera-id CAM01 --output output\smoke_out.mp4 --alerts mock --debug-events --max-frames 5 --no-display
+.\.venv\Scripts\python.exe cli.py run --source path\to\traffic_video.mp4 --camera-id CAM01 --output output\smoke_out.mp4 --alerts mock --debug-events --max-frames 5 --no-display
 ```
 
 ## CLI Utilities
@@ -109,6 +112,10 @@ Tune `configs/default.yaml` under `accident`. The important controls are:
 
 Use `output/debug_events.jsonl` and `accidents.csv` to compare signal scores against labelled clips. Increase `severity_threshold` or `min_signals_required` to reduce false positives; lower them carefully if true collisions are missed.
 
+## Project Status and Limitations
+
+MS-ADA is a CPU-first academic prototype for explainable multi-signal accident confirmation. The repository does not claim deployment-grade accuracy or production readiness. Public validation requires legally shareable traffic footage, camera-specific calibration, and privacy review before publishing any evidence images, clips, plates, or alert payloads.
+
 ## CPU Troubleshooting
 
 - Use `yolo11n.pt` for CPU.
@@ -126,6 +133,17 @@ Install a CUDA-enabled PyTorch build, set `system.device: cuda:0`, and optionall
 ```powershell
 .\.venv\Scripts\python.exe cli.py export-onnx --model yolo11n.pt --output models\yolo11n.onnx
 ```
+
+## Future Work
+
+- Validate on a larger legally shareable traffic-video benchmark.
+- Add a documented public demo dataset or synthetic smoke fixture.
+- Calibrate camera-specific speed and perspective settings per deployment site.
+- Add a real media uploader/CDN before sending WhatsApp image messages.
+
+## Contributing
+
+Use `configs/default.yaml` for tunable settings, keep secrets in environment variables, run `cli.py validate-config`, and run the test suite before submitting changes. Do not commit private footage, generated evidence, model weights, logs, or real alert credentials.
 
 ## Tests
 

@@ -1,5 +1,6 @@
 * text=auto
 
+.gitattributes text eol=lf
 *.md text eol=lf
 *.py text eol=lf
 *.yaml text eol=lf
@@ -7,3 +8,5 @@
 *.txt text eol=lf
 *.json text eol=lf
 *.mermaid text eol=lf
+Dockerfile text eol=lf
+docker/Dockerfile text eol=lf

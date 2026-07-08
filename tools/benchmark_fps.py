@@ -103,7 +103,7 @@ def main(source: str, n: int, resize_w: int, frame_skip: int) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--source", default="tests/fixtures/videos/sample_accident.mp4")
+    parser.add_argument("--source", required=True, help="Path to a local traffic video")
     parser.add_argument("--frames", type=int, default=100)
     parser.add_argument("--resize-width", type=int, default=640)
     parser.add_argument("--frame-skip", type=int, default=1)
