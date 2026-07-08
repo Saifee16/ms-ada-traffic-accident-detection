@@ -1,4 +1,4 @@
-# ─── Python ───────────────────────────────────────────────────
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -19,21 +19,21 @@ lib/
 lib64/
 wheels/
 
-# ─── Virtual Environment ──────────────────────────────────────
+# Virtual environments
 .venv/
 venv/
 env/
 ENV/
-.env
 
-# ─── Environment Variables / Secrets ─────────────────────────
-.env.local
-.env.production
+# Environment variables and secrets
+.env
+.env.*
 *.env
+!.env.example
 secrets.yaml
 secrets.yml
 
-# ─── ML Models & Weights (large binary files) ─────────────────
+# ML models, weights, and training output
 *.pt
 *.pth
 *.onnx
@@ -43,67 +43,69 @@ secrets.yml
 *.h5
 *.pkl
 *.joblib
-models/finetune/
+models/
 runs/
 
-# ─── Output Files (generated at runtime) ─────────────────────
+# Runtime output
 output/
-output/snapshots/
-output/clips/
-output/detections.csv
-output/processed.mp4
+logs/
+*.log
+tools/*.csv
+tuning_report.json
+build_paper.js
 
-# ─── Dataset Images & Labels (too large for git) ─────────────
-datasets/traffic/images/
-datasets/traffic/labels/
-datasets/*/images/
-datasets/*/labels/
+# Local videos, frames, and generated media
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.webm
+*.jpg
+*.jpeg
+*.png
+*.bmp
 
-# ─── Test Fixtures / Sample Videos ───────────────────────────
+# Dataset contents
+datasets/**/images/
+datasets/**/labels/
+datasets/**/videos/
+datasets/**/frames/
+
+# Test fixtures that are too large for git
 tests/fixtures/videos/
 tests/fixtures/frames/
 
-# ─── Logs ─────────────────────────────────────────────────────
-*.log
-logs/
-
-# ─── IDE & Editor ─────────────────────────────────────────────
+# Editor and OS files
 .vscode/
 .idea/
 *.sublime-project
 *.sublime-workspace
-.spyderproject.cfg
+.spyderproject
+.spyproject
 .ropeproject
 *.swp
 *.swo
 *~
-
-# ─── OS Artifacts ─────────────────────────────────────────────
 .DS_Store
 Thumbs.db
 desktop.ini
 $RECYCLE.BIN/
 
-# ─── Pytest & Coverage ────────────────────────────────────────
+# Pytest and coverage
 .pytest_cache/
+.pytest-tmp*/
 .coverage
 htmlcov/
 coverage.xml
 *.cover
 .hypothesis/
 
-# ─── Jupyter ──────────────────────────────────────────────────
+# Jupyter
 .ipynb_checkpoints/
 *.ipynb
 
-# ─── Docker ───────────────────────────────────────────────────
+# Docker volumes
 docker/volumes/
 
-# ─── Ultralytics / YOLO Runtime ───────────────────────────────
+# Ultralytics runtime config/cache
 ultralytics/
-
-# ─── Output Files (generated at runtime) ─────────────────────
-output/clips/
-output/snapshots/
-output/detections.csv
-output/processed.mp4

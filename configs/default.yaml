@@ -1,42 +1,45 @@
-# ============================================================
-# Traffic Surveillance System — Default Configuration
-# ============================================================
+# Traffic Surveillance System - Default Configuration
 
 system:
-  log_level: INFO          # DEBUG | INFO | WARNING | ERROR
-  log_json: false          # true → structured JSON logs
-  device: auto             # auto | cpu | cuda:0
+  log_level: INFO
+  log_json: false
+  device: auto
 
-# ─── Video Input ────────────────────────────────────────────
 video:
-  frame_skip: 2            # process every Nth frame (1 = all)
-  resize_width: 640        # inference resolution width (keeps AR)
-  buffer_size: 64          # bounded producer/consumer queue depth
-  output_fps: 25           # rendered output video FPS
+  frame_skip: 1
+  resize_width: 640
+  input_size: 640
+  buffer_size: 64
+  output_fps: 25
+  drop_frames_when_full: false
 
-# ─── Detector ───────────────────────────────────────────────
 detector:
-  model: yolo11n.pt        # ultralytics auto-downloads on first run
-  conf_threshold: 0.45     # was 0.35 — rejects weak/partial detections
-  iou_threshold: 0.50      # was 0.45 — tighter NMS
-  classes: [0, 1, 2, 3, 5, 7]   # person, bicycle, car, motorbike, bus, truck
-  half: false              # FP16 — only effective on CUDA
-  min_bbox_area_ratio: 0.0005   # drop detections smaller than 0.05% of frame area
-
-# ─── Plate Detector ─────────────────────────────────────────
-plate_detector:
-  model: models/plate_detector.pt   # fine-tuned YOLO for plates
+  model: yolo11n.pt
   conf_threshold: 0.40
-  fallback_id_prefix: "VEHICLE-ID"
+  confidence_threshold: 0.40
+  iou_threshold: 0.50
+  classes: [0, 1, 2, 3, 5, 7]
+  half: false
+  min_bbox_area_ratio: 0.0005
 
-# ─── Tracker ────────────────────────────────────────────────
+plate_detector:
+  enabled: true
+  model: models/plate_detector.pt
+  conf_threshold: 0.40
+  fallback_id_prefix: VEHICLE-ID
+
 tracker:
-  type: bytetrack          # bytetrack | strongsort
+  type: bytetrack
+  max_age: 30
+  min_hits: 3
+  reid_enabled: true
+  reid_gap_seconds: 10
+  cluster_radius_px: 50
   bytetrack:
     track_high_thresh: 0.5
     track_low_thresh: 0.1
     new_track_thresh: 0.6
-    track_buffer: 30       # frames to keep lost track alive
+    track_buffer: 30
     match_thresh: 0.8
   strongsort:
     max_dist: 0.2
@@ -44,80 +47,73 @@ tracker:
     max_age: 30
     n_init: 3
     nn_budget: 100
-  reid_gap_seconds: 10     # tracks separated > this → new ID
 
-# ─── Speed Estimation ───────────────────────────────────────
 speed:
-  pixels_per_meter: 8.0    # calibration — override per camera
-  smoothing_window: 5      # rolling average frames
+  pixels_per_meter: 8.0
+  smoothing_window: 5
 
-# ─── ALPR ───────────────────────────────────────────────────
 alpr:
-  ocr_engine: easyocr      # easyocr | paddleocr
+  enabled: true
+  ocr_engine: easyocr
   languages: [en]
   min_confidence: 0.45
+  min_ocr_confidence: 0.45
   retry_until_exit: true
-  frame_interval: 15       # run OCR at most once every N processed frames per track
-                           # 15 ≈ 1 attempt/sec at 30fps+frame_skip=2. Set lower for higher accuracy.
-  pakistan_formats:        # regex patterns — first match wins
-    - '^[A-Z]{2,3}\s?\d{3,4}$'          # ABC 1234 / AB 123
-    - '^[A-Z]{1,2}\s?\d{4}$'            # A 1234
-    - '^[A-Z]{3}\s?\d{2,3}$'            # LEA 12
-    - '^RIV\s?\d{2,4}$'                 # Rivet/special
+  frame_interval: 15
+  fallback_format: VEHICLE-ID-{num:04d}
+  high_confidence_skip: 0.75
+  pakistan_formats:
+    - '^[A-Z]{2,3}\s?\d{3,4}$'
+    - '^[A-Z]{1,2}\s?\d{4}$'
+    - '^RIV\s?\d{2,4}$'
+    - '^\d{4,5}$'
 
-# ─── Accident Detection ─────────────────────────────────────
-accident:
-  confirmation_seconds: 0.8      # at ~12 processed fps = ~10 frames needed
-                                 # fast-path bypasses this for high-IoU overlaps
-  cooldown_seconds: 30.0
-  iou_spike_threshold: 0.20      # also used as fast-path IoU threshold
-  speed_drop_ratio: 0.5
-  optical_flow_anomaly_zscore: 2.5
-  proximity_px: 80
-  min_signals_required: 2        # iou+proximity is sufficient for confirmation window path
-  min_track_age_frames: 8
-  min_approach_speed_px: 2.0
-  min_severity: 0.15
-  severity_weights:
-    iou: 0.35
-    trajectory: 0.25
-    deceleration: 0.20
-    optical_flow: 0.10
-    proximity: 0.10
-  false_positive_suppression_frames: 3  # allow up to 3 bad frames in the window
-
-# ─── Counting ───────────────────────────────────────────────
 counting:
   window_seconds: 30
   emit_on_window_close: true
 
-# ─── Alerts ─────────────────────────────────────────────────
 alerts:
   enabled: true
-  mock_mode: false          # true → print alerts instead of sending
+  mock_mode: true
+  retry_attempts: 3
+  retry_backoff_seconds: 1.0
+  dedupe_cooldown_seconds: 30.0
   whatsapp:
     api_version: v19.0
-    phone_number_id: "YOUR_PHONE_NUMBER_ID"
-    access_token: "YOUR_ACCESS_TOKEN"       # store in env: WA_ACCESS_TOKEN
-    recipient_number: "92300XXXXXXX"        # E.164 format
+    phone_number_id: YOUR_PHONE_NUMBER_ID
+    access_token: YOUR_ACCESS_TOKEN
+    recipient_number: '92300XXXXXXX'
   smtp:
     host: smtp.gmail.com
     port: 587
-    username: "YOUR_EMAIL@gmail.com"
-    password: "YOUR_APP_PASSWORD"           # env: SMTP_PASSWORD
-    recipient: "alerts@yourorg.com"
+    username: YOUR_EMAIL@gmail.com
+    password: YOUR_APP_PASSWORD
+    recipient: alerts@yourorg.com
     use_tls: true
 
-# ─── Storage ────────────────────────────────────────────────
 storage:
   csv_path: output/detections.csv
+  accidents_csv_path: output/accidents.csv
+  counts_csv_path: output/counts.csv
+  debug_jsonl_path: output/debug_events.jsonl
   snapshots_dir: output/snapshots
   clips_dir: output/clips
+  evidence_dir: output/evidence
   clip_duration_seconds: 5
-  backend: csv             # csv | sqlite | postgres (future)
+  backend: csv
   sqlite_path: output/surveillance.db
 
-# ─── Camera ─────────────────────────────────────────────────
+evidence:
+  save_snapshot: true
+  save_clip: true
+  pre_event_seconds: 3.0
+  post_event_seconds: 2.0
+
+output:
+  save_video: true
+  save_csv: true
+  save_debug_jsonl: true
+
 cameras:
   default:
     id: cam_01
@@ -125,3 +121,102 @@ cameras:
   secondary:
     id: cam_02
     pixels_per_meter: 8.0
+
+accident:
+  high_precision_mode: true
+  candidate_threshold: 0.45
+  confirmed_threshold: 0.60
+  confirmation_seconds: 1.2
+  min_confirming_frames: null
+  min_track_history_frames: 5
+  candidate_persistence_frames: null
+  confirmation_window_frames: null
+  confirmation_score_threshold: 0.60
+  min_signals_required: 4
+  severity_threshold: 0.60
+  min_severity: 0.60
+  cooldown_seconds: 30.0
+  pair_cooldown_frames: null
+  region_cooldown_frames: 300
+  max_candidate_gap_frames: 12
+  state_grace_frames: 24
+  pair_grid_cell_px: 96
+  max_pair_distance_px: 0
+  max_pairs_per_frame: 80
+  debug_record_normal_interval: 30
+  async_enabled: false
+  async_queue_size: 4
+  scene_cut_reset_enabled: true
+  scene_cut_threshold: 0.45
+  scene_cut_consecutive_frames: 1
+  muted_track_frames: 20
+  muted_base_radius_px: 60
+  muted_velocity_radius_scale: 0.75
+  muted_aspect_ratio_delta: 0.35
+  muted_area_ratio_delta: 0.60
+  stationary_speed_px_s: 4.0
+  stationary_window_frames: 15
+  parked_min_seconds: 2.0
+  min_bbox_height_ratio: 0.015
+  normalized_speed_enabled: true
+  road_roi_enabled: false
+  debug_candidates: true
+  accident_scene_detection_enabled: false
+  accident_scene_heuristic_enabled: true
+  accident_scene_persistence_frames: 45
+  accident_scene_min_stopped_vehicles: 2
+  accident_scene_cluster_radius_px: 150
+  accident_scene_score_threshold: 0.68
+  accident_scene_display_frames: 90
+  require_post_impact_validation: true
+  require_hard_impact_signal: true
+  min_hard_impact_signals: 1
+  min_supporting_impact_signals: 1
+  suppress_same_direction_traffic: true
+  suppress_static_static: true
+  suppress_normal_passing_parked: true
+  closing_distance_enabled: true
+  closing_distance_min_drop_px: 12
+  closing_distance_min_drop_ratio: 0.12
+  candidate_overlay_min_state: CANDIDATE
+  confirmed_display_seconds: 3.0
+
+  proximity_threshold_px: 90
+  proximity_px: 90
+  iou_spike_threshold: 0.08
+  min_contact_iou: 0.06
+  contact_edge_px_abs: 5
+  velocity_drop_threshold: 0.30
+  speed_drop_ratio: 0.70
+  min_relative_speed_for_impact: 0.16
+  min_rel_delta_v_for_impact: 0.30
+  optical_flow_threshold: 0.18
+  flow_spike_threshold: 0.18
+  optical_flow_anomaly_zscore: 2.5
+  trajectory_prediction_horizon: 8
+  prediction_error_threshold: 0.35
+  post_impact_seconds: 0.6
+  pre_window_seconds: 1.0
+  moving_threshold: 0.012
+  min_peak_speed_for_collision: 6.0
+  same_direction_cosine: 0.90
+  grazing_iou_limit: 0.08
+  approach_angle_deg: 20.0
+  false_positive_suppression_frames: 2
+  min_track_age_frames: 5
+
+  debug_events: true
+  debug_mode: false
+
+  flee_speed_px_s: 12.0
+  incapacitated_speed_px_s: 4.0
+
+  severity_weights:
+    iou_score: 0.14
+    proximity_score: 0.10
+    closing_distance_score: 0.12
+    velocity_drop_score: 0.20
+    trajectory_conflict_score: 0.17
+    optical_flow_anomaly_score: 0.10
+    post_impact_stagnation_score: 0.17
+    direction_change_score: 0.12
