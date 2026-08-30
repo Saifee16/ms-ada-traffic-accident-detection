@@ -66,6 +66,7 @@ flowchart TB
     end
 
     subgraph Alerts["Alert Dispatcher (async)"]
+        direction LR
         WA[WhatsApp\nMeta Cloud API v19.0]
         SMTP[SMTP Email\n+ snapshot attachment]
     end
@@ -82,7 +83,8 @@ flowchart TB
     Tracking --> Fusion
     Fusion --> Alerts
     Fusion --> Storage
-    Alerts -.->|non-blocking| WA & SMTP
+    Alerts -.->|non-blocking| WA
+    Alerts -.->|non-blocking| SMTP
 
     style Fusion fill:#ffcccc,stroke:#cc0000
     style Alerts fill:#ccffcc,stroke:#006600
