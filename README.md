@@ -83,9 +83,9 @@ flowchart TB
     Fusion -.->|non-blocking| Alerts
     Fusion --> Storage
 
-    style Fusion fill:#ffcccc,stroke:#cc0000
-    style Alerts fill:#ccffcc,stroke:#006600
-    style Storage fill:#cce5ff,stroke:#004080
+    style Fusion fill:#f8d7da,stroke:#b02a37,color:#3a0006
+    style Alerts fill:#d4edda,stroke:#1e7e34,color:#0a2e12
+    style Storage fill:#d0e6f7,stroke:#2c5f8a,color:#0a2540
 ```
 
 Architecture references are in `docs/ARCHITECTURE.mermaid`, `docs/PIPELINE_FLOWCHART.mermaid`, `docs/METHODOLOGY.md`, and `docs/ALGORITHM_OVERVIEW.md`.
