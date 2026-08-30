@@ -80,9 +80,8 @@ flowchart TB
     Pipeline --> Detection
     Detection --> Tracking
     Tracking --> Fusion
-    Fusion --> Alerts
+    Fusion -.->|non-blocking| Alerts
     Fusion --> Storage
-    Alerts -.->|non-blocking| WA & SMTP
 
     style Fusion fill:#ffcccc,stroke:#cc0000
     style Alerts fill:#ccffcc,stroke:#006600
