@@ -1,5 +1,11 @@
 # AI-Powered Intelligent Traffic Surveillance System
 
+Academic Research Prototype · NED University Final Year Project
+
+[![CI](https://github.com/Saifee16/ms-ada-traffic-accident-detection/actions/workflows/ci.yml/badge.svg)](https://github.com/Saifee16/ms-ada-traffic-accident-detection/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
+
 Real-time vehicle detection, tracking, ALPR, accident detection, hit-and-run monitoring, evidence capture, CSV output, and WhatsApp/SMTP alerting for recorded MP4 traffic videos.
 
 ## Windows Setup
